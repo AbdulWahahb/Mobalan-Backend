@@ -62,7 +62,7 @@ export const createAccountValidationSchema: any = {
       errorMessage: "Current balance must be a valid decimal number",
     },
     custom: {
-      options: (value) => {
+      options: (value:any) => {
         if (value < 0) {
           throw new Error("Current balance cannot be negative");
         }

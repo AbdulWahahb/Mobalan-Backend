@@ -8,6 +8,7 @@ import {
   query,
   validationResult,
 } from "express-validator";
+import { handleDatabaseError } from "../middlewares/databaseErrorHandler";
 // import { handleDatabaseError } from "../utils/databaseErrorHandler.mjs";
 const router = Router();
 // get data
@@ -55,9 +56,9 @@ export const fetchUser = async (req: Request, res: Response) => {
       data: result,
     });
   } catch (error) {
-    console.error("Database error:", err);
+    console.error("Database error:", error);
 
-    const errorResponse = handleDatabaseError(err);
+    const errorResponse = handleDatabaseError(error);
     return res.status(errorResponse.statusCode).json({
       success: false,
       message: `Failed to add ${modulaName}`,
@@ -79,7 +80,7 @@ export const createUser = async (req: Request, res: Response) => {
       current_balance,
       is_active,
     } = req.body;
-    const [result] = await connection.execute(
+    const [result]:any = await connection.execute(
       "INSERT INTO chart_of_accounts (account_code, account_name, account_type, normal_balance, description, current_balance, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
         account_code,
