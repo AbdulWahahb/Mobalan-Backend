@@ -1,6 +1,5 @@
 // import userRoute from "./routes/user.route";
 import express from "express";
-import userRoutes from "./routes/user.route";
 import chartOfAccountRoutes from "./routes/chart_of_account.route";
 import itemRoutes from "./routes/item.route";
 import inventoryAdjustmentRoutes from "./routes/inventory_adjustment.route";
@@ -40,7 +39,5 @@ app.use("/api/inventory_system", billRoutes);
 app.use("/api/inventory_system", paymentMadeRoutes);
 app.use("/api/inventory_system", expenseRoutes);
 
-// paymentsReceived
-// app.use("/api/tailoring", userRoutes);
 
 export default app;
