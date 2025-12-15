@@ -4,9 +4,7 @@ export const createAccountValidationSchema: any = {
     notEmpty: {
       errorMessage: "Account code is required",
     },
-    isAlphanumeric: {
-      errorMessage: "Account code must be alphanumeric",
-    },
+   
     isLength: {
       options: { min: 3, max: 20 },
       errorMessage: "Account code must be between 3-20 characters",

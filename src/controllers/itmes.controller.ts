@@ -4,6 +4,8 @@ import { RowDataPacket } from "mysql2";
 import { checkSchema, validationResult } from "express-validator";
 import { handleDatabaseError } from "../middlewares/databaseErrorHandler";
 import { createAccountValidationSchema } from "../middlewares/validationSchemas";
+import { cleanRegex } from "zod/v4/core/util.cjs";
+import { log } from "console";
 
 const router = Router();
 // get data
@@ -88,7 +90,8 @@ export const createItem = async (req: Request, res: Response) => {
     );
 
     res.status(200).json({
-      message: ` ${modulaName} added successfully`,
+      message: ` ${modulaName} Created successfully`,
+      status: 200,
       id: result.insertId,
     });
   } catch (err) {
@@ -102,9 +105,8 @@ export const createItem = async (req: Request, res: Response) => {
     });
   }
 };
-
-// // DELETE
-export const deleteItems = async (req: Request, res: Response) => {
+// change status
+export const changeItemStatus = async (req: Request, res: Response) => {
   try {
     const item_id = parseInt(req.params.id); // Explicitly parse as integer
 
@@ -112,37 +114,21 @@ export const deleteItems = async (req: Request, res: Response) => {
       return res.status(400).json({ error: `Invalid ${modulaName} ID` });
     }
 
-    // Optional: First check if the todo exists
+    // Optional: First check if the item  exists
     const [existing]: any = await connection.execute(
       "SELECT * FROM items WHERE id = ?",
       [item_id]
     );
-    const currentStock = existing[0]?.opening_stock || 0;
 
     // 2. Prevent deletion if stock is not zero
-    if (currentStock > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Cannot delete item with the opening stocks`,
-      });
-    }
-
     // check if exsist
+    const [newStatus]: any = await connection.execute(
+      "UPDATE items "
+    )
     if (existing.length === 0) {
       return res.status(404).json({ error: `${modulaName} not found` });
     }
 
-    // Then proceed with deletion
-    // const [result]: any = await connection.execute(
-    //   "DELETE FROM items WHERE id = ?",
-    //   [item_id]
-    // );
-
-    // res.status(200).json({
-    //   message: `${modulaName} deleted successfully`,
-    //   deletedId: item_id,
-    //   affectedRows: result.affectedRows,
-    // });
   } catch (error: any) {
     console.error("Delete error:", error);
 
@@ -154,6 +140,59 @@ export const deleteItems = async (req: Request, res: Response) => {
     });
   }
 };
+// // DELETE
+export const deleteItems = async (req: Request, res: Response) => {
+  try {
+    const item_id = parseInt(req.params.id); // Explicitly parse as integer
+
+    if (!item_id || isNaN(item_id)) {
+      return res.status(400).json({ error: `Invalid ${modulaName} ID` });
+    }
+    console.log('Here is starting ata', item_id);
+
+    // First, check if the item exists
+    const [existing]: any = await connection.execute(
+      "SELECT * FROM items WHERE id = ?",
+      [item_id]
+    );
+    console.log(existing);
+
+    if (!existing || existing.length === 0) {
+      return res.status(404).json({ error: `${modulaName} not found` });
+    }
+
+    const currentStock = existing[0]?.opening_stock || 0;
+
+    // Prevent deletion if stock is not zero
+    if (currentStock > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot delete item with the opening stocks`,
+      });
+    }
+
+    // Delete the item from the database
+    const result = await connection.execute("DELETE FROM items WHERE id = ?", [item_id]);
+    console.log('Delete result:', result);
+
+    return res.status(200).json({
+      success: true,
+      message: `${modulaName} deleted successfully`,
+      status: 200,
+    });
+
+  } catch (error: any) {
+    console.error("Delete error:", error);
+
+    const errorResponse = handleDatabaseError(error);
+    return res.status(errorResponse.statusCode).json({
+      success: false,
+      message: `Failed to delete ${modulaName}`,
+      error: errorResponse.error,
+    });
+  }
+};
+
 // // UPDATE
 
 export const updateItem = async (req: Request, res: Response) => {

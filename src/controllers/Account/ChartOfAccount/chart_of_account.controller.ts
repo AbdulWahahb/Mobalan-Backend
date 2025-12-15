@@ -56,21 +56,49 @@ export const fetchAccountTypes = async (req: Request, res: Response) => {
 // // account Types;
 export const fetchAccounts = async (req: Request, res: Response) => {
   try {
-    const [result] = await connection.execute(
-      "SELECT * FROM  chart_of_accounts "
-    );
+    const accountName = req.query.filter as string | undefined; // e.g., "Cash"
+    if (accountName) {
+      if (!accountName) {
+        return res.status(400).json({ error: "Account name is required" });
+      }
 
-    if (result) {
+      const [accountTypeResult]: any = await connection.execute(
+        `SELECT account_type_id FROM accounts WHERE name = ?`,
+        [accountName]
+      );
+
+      if (!accountTypeResult || accountTypeResult.length === 0) {
+        return res
+          .status(404)
+          .json({ error: `Account type "${accountName}" not found` });
+      }
+
+      const accountTypeId = accountTypeResult[0]?.account_type_id;
+
+      //  Fetch all chart_of_accounts with that account_type
+      const [accounts]: any = await connection.execute(
+        `SELECT * FROM chart_of_accounts WHERE account_type = ?`,
+        [accountTypeId]
+      );
       res.status(200).json({
-        message: `${modulaName} Fetch Successfully`,
-        data: result,
+        message: `Accounts for type "${accountName}" fetched successfully`,
+        data: accounts,
+      });
+    } else {
+      const [accounts]: any = await connection.execute(
+        `SELECT * FROM chart_of_accounts`
+      );
+      res.status(200).json({
+        message: `Accounts for type "${accountName}" fetched successfully`,
+        data: accounts,
       });
     }
   } catch (error) {
-    console.log("here is error", error);
+    console.error("Error fetching accounts:", error);
     res.status(500).json({ error: `Failed to fetch ${modulaName}` });
   }
 };
+
 // SHOW
 export const fetchAccount = async (req: Request, res: Response) => {
   const account_id = Number(req.params.id);
@@ -104,11 +132,18 @@ export const fetchAccount = async (req: Request, res: Response) => {
 };
 // CREATE
 export const createAccount = async (req: Request, res: Response) => {
-  const result = validationResult(req);
-  // check if there was not error then = > save new record
-  if (!result?.isEmpty()) {
-    return res.status(401).send({ errors: result.array() });
+  const validation = validationResult(req);
+
+  if (!validation.isEmpty()) {
+    const errors = validation.array();
+    return res.status(422).json({
+      success: false,
+      status: 422,
+      message: "Validation error",
+      errors,
+    });
   }
+
   try {
     const {
       account_code,
@@ -119,6 +154,7 @@ export const createAccount = async (req: Request, res: Response) => {
       current_balance,
       is_active,
     } = req.body;
+
     const [result]: any = await connection.execute(
       "INSERT INTO chart_of_accounts (account_code, account_name, account_type, normal_balance, description, current_balance, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
@@ -132,18 +168,22 @@ export const createAccount = async (req: Request, res: Response) => {
       ]
     );
 
-    res.status(200).json({
-      message: `${modulaName} created successfully`,
-      id: result.insertId,
+    return res.status(200).json({
+      success: true,
       status: 200,
+      message: `${modulaName} created successfully`,
+      data: {
+        id: result.insertId,
+      },
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Database error:", err);
 
     const errorResponse = handleDatabaseError(err);
     return res.status(errorResponse.statusCode).json({
       success: false,
-      message: `Failed to add ${modulaName}`,
+      status: errorResponse.statusCode,
+      message: errorResponse.message,
       error: errorResponse.error,
     });
   }
