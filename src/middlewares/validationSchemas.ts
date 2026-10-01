@@ -4,7 +4,6 @@ export const createAccountValidationSchema: any = {
     notEmpty: {
       errorMessage: "Account code is required",
     },
-   
     isLength: {
       options: { min: 3, max: 20 },
       errorMessage: "Account code must be between 3-20 characters",
@@ -20,7 +19,7 @@ export const createAccountValidationSchema: any = {
       errorMessage: "Account name must be between 2-100 characters",
     },
   },
-  account_type: {
+  subtype_id: {
     in: ["body"],
     notEmpty: {
       errorMessage: "Account type is required",
@@ -60,7 +59,7 @@ export const createAccountValidationSchema: any = {
       errorMessage: "Current balance must be a valid decimal number",
     },
     custom: {
-      options: (value:any) => {
+      options: (value: any) => {
         if (value < 0) {
           throw new Error("Current balance cannot be negative");
         }

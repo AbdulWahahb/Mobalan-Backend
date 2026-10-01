@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createBill, deleteBill, fetchBill, fetchBills, updateBill } from "../../controllers/purchase/bills.controller";
+import { createBill, deleteBill, fetchBill, fetchBills, updateBill, updateBillStatus } from "../../controllers/purchase/bills.controller";
 
 const billRoutes = Router();
 billRoutes.get("/bills", fetchBills);
@@ -11,5 +11,6 @@ billRoutes.post(
 );
 billRoutes.delete("/bill/delete/:id", deleteBill);
 billRoutes.put("/bill/update/:id", updateBill);
+billRoutes.put("/bill/status/:id", updateBillStatus);
 
 export default billRoutes;

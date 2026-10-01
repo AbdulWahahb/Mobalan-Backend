@@ -7,6 +7,8 @@ import {
   fetchAccount,
   fetchAccounts,
   fetchAccountTypes,
+  fetchCustomAccounts,
+  fetchCustomSubAccounts,
   updateAccount,
 } from "../controllers/Account/ChartOfAccount/chart_of_account.controller";
 import { createAccountValidationSchema } from "../middlewares/validationSchemas";
@@ -16,6 +18,9 @@ const chartOfAccountRoutes = Router();
 chartOfAccountRoutes.get("/account_types", fetchAccountTypes);
 // fetchAccountTypeList
 chartOfAccountRoutes.get("/accounts", fetchAccounts);
+chartOfAccountRoutes.get("/sub_account_type", fetchCustomSubAccounts);
+
+chartOfAccountRoutes.get("/select-options", fetchCustomAccounts);
 chartOfAccountRoutes.get("/account/show/:id", fetchAccount);
 chartOfAccountRoutes.post(
   "/account/create",

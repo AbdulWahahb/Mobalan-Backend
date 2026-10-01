@@ -9,7 +9,6 @@ import invoicesRoutes from "./routes/invoices.route";
 import paymentsReceivedRoutes from "./routes/payment_resive.route";
 import vendorRoutes from "./routes/purchase/venodr.route";
 import billRoutes from "./routes/purchase/bills.route";
-import payment_made from "./routes/purchase/payment_made.route";
 import paymentMadeRoutes from "./routes/purchase/payment_made.route";
 import expenseRoutes from "./routes/purchase/expense.route";
 import cors from 'cors';
